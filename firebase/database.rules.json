@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rezadrive": {
+      "users": {
+        "$uid": {
+          "records": {
+            ".read": "auth != null && auth.uid === $uid && auth.token.email_verified === true",
+            ".write": "auth != null && auth.uid === $uid && auth.token.email_verified === true && newData.exists()",
+            "$id": {
+              ".validate": "$id.matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/) && newData.hasChildren(['kind','payload','version','deleted','updatedAt']) && ((!data.exists() && newData.child('version').val() === 1) || (data.exists() && newData.child('kind').val() === data.child('kind').val() && ((newData.child('version').val() === data.child('version').val() && newData.child('payload').val() === data.child('payload').val() && newData.child('deleted').val() === data.child('deleted').val() && newData.child('updatedAt').val() === data.child('updatedAt').val()) || newData.child('version').val() === data.child('version').val() + 1)))",
+              "kind": {
+                ".validate": "newData.isString() && (newData.val() === 'session' || newData.val() === 'job' || newData.val() === 'expense' || newData.val() === 'fuel' || newData.val() === 'transfer')"
+              },
+              "payload": {
+                ".validate": "newData.isString() && newData.val().length <= 12000"
+              },
+              "version": {
+                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() % 1 === 0"
+              },
+              "deleted": {
+                ".validate": "newData.isBoolean()"
+              },
+              "updatedAt": {
+                ".validate": "newData.isString() && newData.val().length <= 40"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}
