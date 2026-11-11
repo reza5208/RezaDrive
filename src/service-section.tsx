@@ -1,0 +1,23 @@
+import {ArrowRight,CalendarDays,CheckCircle2,Gauge,Info,Plus,TriangleAlert,Wrench} from 'lucide-react';
+import type {Entry} from '../lib/model';
+import {money} from '../lib/model';
+import {currentOdometer,serviceReminders,malaysiaDate} from '../lib/service';
+import {t,getLocale} from '../lib/locale';
+const km=(v:number)=>v.toLocaleString(getLocale(),{maximumFractionDigits:2})+' km';
+const date=(v:string)=>new Intl.DateTimeFormat(getLocale(),{timeZone:'Asia/Kuala_Lumpur',day:'numeric',month:'short',year:'numeric'}).format(new Date(v.length===10?v+'T12:00:00+08:00':v));
+export function ServiceAlert({records,onOpen}:{records:Entry[];onOpen:()=>void}){
+ const attention=serviceReminders(records).filter(r=>r.status!=='scheduled');
+ if(!attention.length)return null;
+ return <button className="service-alert" onClick={onOpen}><Wrench size={20}/><span><strong>{t('serviceAttention',{count:attention.length})}</strong><small>{attention.slice(0,2).map(r=>r.entry.data.label).join(' · ')}</small></span><ArrowRight size={18}/></button>;
+}
+export default function ServiceSection({records,onAdd,onComplete,onEdit,onDelete}:{records:Entry[];onAdd:()=>void;onComplete:(entry:Entry)=>void;onEdit:(entry:Entry)=>void;onDelete:(entry:Entry)=>void}){
+ const odo=currentOdometer(records),reminders=serviceReminders(records),history=records.filter(r=>r.kind==='service').sort((a,b)=>b.data.at.localeCompare(a.data.at)||b.data.odo-a.data.odo);
+ return <>
+  <div className="toolbar"><p className="muted">{t('ServiceScheduleHelp')}</p><button className="primary" onClick={onAdd}><Plus size={18}/>{t('AddServiceReminder')}</button></div>
+  <div className="stats-row service-stats"><div className="stat"><div><span>{t('RecordedOdometer')}</span><strong>{odo===null?'— km':km(odo)}</strong></div><Gauge size={22}/></div><div className="stat"><div><span>{t('ServiceDue')}</span><strong>{reminders.filter(r=>r.status==='due').length}</strong></div><TriangleAlert size={22}/></div><div className="stat"><div><span>{t('ServiceSoon')}</span><strong>{reminders.filter(r=>r.status==='soon').length}</strong></div><CalendarDays size={22}/></div></div>
+  <div className="note-card"><Info size={20}/><p>{t('OdometerSourceHelp')} {t('ServiceThresholdHelp')}</p></div>
+  {reminders.length?<div className="service-grid">{reminders.map(r=>{const d=r.entry.data;return <article className={'card service-card service-'+r.status} key={d.itemId||r.entry.id}><div className="service-card-top"><span className="service-symbol"><Wrench size={21}/></span><span className={'service-badge '+r.status}>{t(r.status==='due'?'ServiceDue':r.status==='soon'?'ServiceSoon':'ServiceScheduled')}</span></div><h2>{d.label}</h2><p className="small muted service-last">{t('LastService')} {date(d.at)} · {km(d.odo)}</p><div className="service-next"><span>{t('NextService')}</span>{r.nextOdo!==null&&<strong><Gauge size={17}/>{km(r.nextOdo)}</strong>}{r.nextDate&&<strong><CalendarDays size={17}/>{date(r.nextDate)}</strong>}</div><div className="service-remaining">{r.remainingKm!==null&&<span>{t(r.remainingKm<0?'ServiceOverKm':'ServiceRemainingKm',{value:km(Math.abs(r.remainingKm))})}</span>}{r.remainingDays!==null&&<span>{t(r.remainingDays<0?'ServiceOverDays':'ServiceRemainingDays',{count:Math.abs(r.remainingDays)})}</span>}</div>{d.note&&<p className="service-note">{d.note}</p>}<button className="primary full" onClick={()=>onComplete(r.entry)}><CheckCircle2 size={17}/>{t('RecordCompletedService')}</button><button className="text-button full" onClick={()=>onEdit(r.entry)}>{t('EditLastService')}</button></article>;})}</div>:<div className="card"><div className="empty"><span><Wrench size={28}/></span><h3>{t('NoServiceReminders')}</h3><p>{t('NoServiceRemindersHelp')}</p><button className="primary" onClick={onAdd}><Plus size={18}/>{t('AddServiceReminder')}</button></div></div>}
+  {history.length>0&&<div className="card service-history"><div className="section-heading"><h2>{t('ServiceHistory')}</h2><span className="counter">{history.length} {t('rekod')}</span></div>{history.map(r=><div className="record-row" key={r.id}><span className="record-icon"><Wrench size={19}/></span><div className="record-content"><strong>{r.data.label}</strong><small>{date(r.data.at)} · {km(r.data.odo)}</small>{r.data.note&&<span>{r.data.note}</span>}</div><div className="record-right">{r.data.cost!==null&&r.data.cost!==undefined&&<strong>{money(r.data.cost)}</strong>}<div><button onClick={()=>onEdit(r)}>{t('ServiceEdit')}</button><button onClick={()=>onDelete(r)}>{t('ServiceDelete')}</button></div></div></div>)}</div>}
+  <div className="note-card"><Info size={20}/><p>{t('ServiceCostHelp')}</p></div>
+ </>;
+}

@@ -1,5 +1,5 @@
 import {getLocale} from './locale.ts';
-export type Kind = 'session'|'job'|'expense'|'fuel'|'transfer';
+export type Kind = 'session'|'job'|'expense'|'fuel'|'transfer'|'service';
 export type Pay = 'cash'|'qr'|'wallet';
 export type Loc = {lat:number;lng:number;accuracy:number;at:string};
 export type Entry = {id:string;kind:Kind;version:number;deleted?:boolean;data:Record<string,any>};
@@ -41,4 +41,5 @@ export function consumption(rows:Entry[]) {
  const km=cycles.reduce((s,c)=>s+c.km,0),litres=cycles.reduce((s,c)=>s+c.litres,0),cost=cycles.reduce((s,c)=>s+c.cost,0);
  return {cycles,kmPerL:litres?km/litres:0,costPerKm:km?cost/km:0};
 }
+
 
