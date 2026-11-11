@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "firebaseConfig": {
     "apiKey": "AIzaSyB_2TgQ__aMKb06byVEtDtjllf86b5cXpo",
     "authDomain": "rezadriver.firebaseapp.com",
