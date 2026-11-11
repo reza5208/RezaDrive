@@ -1,8 +1,9 @@
+import {getLocale} from './locale.ts';
 export type Kind = 'session'|'job'|'expense'|'fuel'|'transfer';
 export type Pay = 'cash'|'qr'|'wallet';
 export type Loc = {lat:number;lng:number;accuracy:number;at:string};
 export type Entry = {id:string;kind:Kind;version:number;deleted?:boolean;data:Record<string,any>};
-export const money = (v:number) => new Intl.NumberFormat('ms-MY',{style:'currency',currency:'MYR'}).format(v||0);
+export const money = (v:number) => new Intl.NumberFormat(getLocale(),{style:'currency',currency:'MYR'}).format(v||0);
 export const payLabel:Record<Pay,string> = {cash:'Cash',qr:'QR',wallet:'Wallet Lalamove'};
 export const round = (v:number) => Math.round((v+Number.EPSILON)*100)/100;
 export function jobNet(d:Record<string,any>) {return round((d.method==='wallet' ? Number(d.net)||0 : (Number(d.gross)||0)-(Number(d.deductions)||0))+(Number(d.tip)||0));}
@@ -40,3 +41,4 @@ export function consumption(rows:Entry[]) {
  const km=cycles.reduce((s,c)=>s+c.km,0),litres=cycles.reduce((s,c)=>s+c.litres,0),cost=cycles.reduce((s,c)=>s+c.cost,0);
  return {cycles,kmPerL:litres?km/litres:0,costPerKm:km?cost/km:0};
 }
+
