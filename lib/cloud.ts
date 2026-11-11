@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth';
 import { getDatabase, get, ref, runTransaction, type Database } from 'firebase/database';
 import type { Entry } from './model';
+import {planWrite,isAcknowledged,VERSION_CONFLICT,type WireRecords} from './sync-operation';
 export type CloudConfig={enabled:boolean;firebaseConfig:Record<string,string>};
 let config:CloudConfig={enabled:false,firebaseConfig:{}},db:Database|null=null;
 export async function initializeCloud(observe:(user:User|null)=>void){
@@ -29,27 +30,31 @@ export async function cloudRead(owner:string):Promise<Entry[]>{
  return Object.entries(stored).map(([id,v]:[string,any])=>({id,kind:v.kind,data:JSON.parse(v.payload),version:v.version,deleted:v.deleted}));
 }
 export async function cloudWrite(owner:string,op:Entry):Promise<{version:number}>{
- const expected=op.version,next=expected+1,payload=JSON.stringify(op.data);
- let reason='Rekod berubah pada peranti lain. Semak versi awan dahulu.';
- const reference=recordsRef(owner);
- // Warm the SDK cache so edits queued before a reload compare against the
- // server record instead of treating an unpopulated cache as a deletion.
+ const reference=recordsRef(owner),updatedAt=new Date().toISOString();
+ let reason=VERSION_CONFLICT;
  await get(reference);
- const result=await runTransaction(reference,(all:any)=>{
-  // RTDB may first invoke the updater with an empty cache. Returning a proposed
-  // value lets the server compare its hash and retry against the actual data.
-  const records=all||{},current=records[op.id];
-  if(current&&current.version===next&&current.payload===payload&&current.deleted===!!op.deleted&&current.kind===op.kind)return records;
-  if((current?.version||0)!==expected||current&&current.kind!==op.kind)return;
-  if(!op.deleted&&op.kind==='session'&&!op.data.endAt){
-   const active=Object.entries(records).some(([id,r]:[string,any])=>id!==op.id&&r.kind==='session'&&!r.deleted&&!JSON.parse(r.payload).endAt);
-   if(active){reason='Ada sesi aktif pada peranti lain. Muat semula sebelum mula sesi baru.';return;}
+ try {
+  const result=await runTransaction(reference,(all:WireRecords|null)=>{
+   const plan=planWrite(all,op,updatedAt);
+   if(plan.reason)reason=plan.reason;
+   return plan.records;
+  },{applyLocally:false});
+  if(!result.committed)throw Object.assign(new Error(reason),{status:409});
+  return {version:result.snapshot.child(op.id).val().version};
+ }catch(error){
+  // A genuinely missing versioned record cannot be recreated under the rules.
+  // Distinguish this from a permissions error without weakening those rules.
+  if(/permission[-_]denied/i.test(String((error as any)?.code))&&op.version>0){
+   let remote:WireRecords|null|undefined;
+   try{remote=(await get(reference)).val();}catch{/* Preserve the original error if the read is also denied. */}
+   if(remote!==undefined){
+    const current=remote?.[op.id];
+    if(isAcknowledged(current,op))return {version:current!.version};
+    if(!current||current.version!==op.version||current.kind!==op.kind)throw Object.assign(new Error(VERSION_CONFLICT),{status:409});
+   }
   }
-  records[op.id]={kind:op.kind,payload,version:next,deleted:!!op.deleted,updatedAt:new Date().toISOString()};
-  return records;
- },{applyLocally:false});
- if(!result.committed){const e=Object.assign(new Error(reason),{status:409});throw e;}
- return {version:result.snapshot.child(op.id).val().version};
+  throw error;
+ }
 }
 export function cloudError(e:any){
  const code=String(e?.code||'');
@@ -60,3 +65,4 @@ export function cloudError(e:any){
  if(code.includes('popup-closed')||code.includes('cancelled-popup'))return 'Login dibatalkan. Hang boleh cuba semula.';
  return e?.message||'Cloud belum dapat disambungkan.';
 }
+

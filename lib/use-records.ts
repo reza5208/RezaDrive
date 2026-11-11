@@ -64,5 +64,7 @@ export function useRecords(owner:string|null,demo:boolean){
   rows.current=[...out.records.filter((r:Entry)=>!ids.has(r.id)),...rows.current.filter(r=>ids.has(r.id))];
   blocked.current=false;persist();setError('');void sync();
  }
- return {records:records.filter(r=>!r.deleted),ready,status,pending,error,save,sync,useCloud,conflict:status==='Perlu semakan',conflictEntry:queue.current[0]};
+ function retrySync(){blocked.current=false;return sync();}
+ return {retrySync,records:records.filter(r=>!r.deleted),ready,status,pending,error,save,sync,useCloud,conflict:status==='Perlu semakan',conflictEntry:queue.current[0]};
 }
+
