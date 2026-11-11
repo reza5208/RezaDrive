@@ -6,6 +6,7 @@
     "projectId": "rezadriver",
     "storageBucket": "rezadriver.firebasestorage.app",
     "messagingSenderId": "47967591452",
-    "appId": "1:47967591452:web:3047ba463429f6c54053d9"
+    "appId": "1:47967591452:web:3047ba463429f6c54053d9",
+    "databaseURL": "https://rezadriver-default-rtdb.asia-southeast1.firebasedatabase.app"
   }
 }
