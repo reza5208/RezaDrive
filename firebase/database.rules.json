@@ -11,7 +11,7 @@
             "$id": {
               ".validate": "$id.matches(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/) && newData.hasChildren(['kind','payload','version','deleted','updatedAt']) && ((!data.exists() && newData.child('version').val() === 1) || (data.exists() && newData.child('kind').val() === data.child('kind').val() && ((newData.child('version').val() === data.child('version').val() && newData.child('payload').val() === data.child('payload').val() && newData.child('deleted').val() === data.child('deleted').val() && newData.child('updatedAt').val() === data.child('updatedAt').val()) || newData.child('version').val() === data.child('version').val() + 1)))",
               "kind": {
-                ".validate": "newData.isString() && (newData.val() === 'session' || newData.val() === 'job' || newData.val() === 'expense' || newData.val() === 'fuel' || newData.val() === 'transfer')"
+                ".validate": "newData.isString() && (newData.val() === 'session' || newData.val() === 'job' || newData.val() === 'expense' || newData.val() === 'fuel' || newData.val() === 'transfer' || newData.val() === 'service')"
               },
               "payload": {
                 ".validate": "newData.isString() && newData.val().length <= 12000"
