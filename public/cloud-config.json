@@ -1,1 +1,11 @@
-{"enabled":false,"firebaseConfig":{}}
+{
+  "enabled": false,
+  "firebaseConfig": {
+    "apiKey": "AIzaSyB_2TgQ__aMKb06byVEtDtjllf86b5cXpo",
+    "authDomain": "rezadriver.firebaseapp.com",
+    "projectId": "rezadriver",
+    "storageBucket": "rezadriver.firebasestorage.app",
+    "messagingSenderId": "47967591452",
+    "appId": "1:47967591452:web:3047ba463429f6c54053d9"
+  }
+}
