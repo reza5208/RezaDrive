@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth';
-import { getDatabase, get, ref, runTransaction, type Database } from 'firebase/database';
+import { getDatabase, get, ref, runTransaction, onValue, type Database } from 'firebase/database';
 import type { Entry } from './model';
 import {planWrite,isAcknowledged,VERSION_CONFLICT,type WireRecords} from './sync-operation';
 export type CloudConfig={enabled:boolean;firebaseConfig:Record<string,string>};
@@ -66,3 +66,5 @@ export function cloudError(e:any){
  return e?.message||'Cloud belum dapat disambungkan.';
 }
 
+
+export function observeConnection(callback:(connected:boolean)=>void){return db?onValue(ref(db,'.info/connected'),snap=>callback(snap.val()===true),()=>callback(false)):()=>{};}

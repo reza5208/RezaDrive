@@ -8,7 +8,7 @@ Buku perjalanan Lalamove untuk Reza dan Nissan Grand Livina 1.8.
 
 - GitHub Pages menggunakan aplikasi statik React + Vite.
 - Mod device boleh digunakan tanpa akaun. Rekod disimpan dalam browser pada device tersebut, bukan di GitHub.
-- Sambungan Google login dan Firebase Realtime Database telah ditulis tetapi **belum diaktifkan**: `public/cloud-config.json` sengaja mempunyai `enabled: false` sehingga projek Firebase dan peraturan keselamatannya disediakan.
+- Google login dan Firebase Realtime Database diaktifkan dalam `public/cloud-config.json`; akses bergantung pada rules projek Firebase yang diterbitkan.
 - Kod sumber repo adalah awam. Tiada rekod kerja pengguna, lokasi, kata laluan atau token dimasukkan ke repo.
 - Versi hosting lama mempunyai backend yang berbeza; rekodnya tidak dipindahkan secara automatik.
 
@@ -55,4 +55,8 @@ npm run dev
 
 Base path ialah `/RezaDrive/`. GitHub Actions membina dan menerbitkan `dist/` pada setiap push ke main. App ini tidak bergantung pada endpoint `/api/records` atau login ChatGPT.
 
-Ujian pengiraan kewangan dan petrol dijalankan secara setempat. Ujian Google login, peraturan RTDB pada emulator dan sync dua device belum dijalankan; jangan tandakan sync live sebelum ujian tersebut lulus.
+Ujian pengiraan kewangan dan petrol dijalankan secara setempat. Rules RTDB, pengasingan akaun dan transaksi cold-cache telah diuji pada emulator demo. Login Google sebenar dan ujian dua peranti fizikal masih pemeriksaan pengguna; ujian emulator tidak membuktikan konfigurasi rules production.
+
+## Kemas kini v5
+
+Backup/import & pemulihan, tema, carian, Undo, laporan PDF dan ringkasan pendapatan gabungan: [panduan dan bukti ujian](docs/improvements-v5.md).

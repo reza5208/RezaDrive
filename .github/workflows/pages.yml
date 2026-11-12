@@ -22,6 +22,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install playwright==1.58.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/ui_browser.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
